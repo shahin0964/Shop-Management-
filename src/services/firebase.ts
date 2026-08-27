@@ -1,6 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, type Firestore, doc, getDocFromServer, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
@@ -36,7 +36,14 @@ export function initFirebase() {
       }
 
       auth = getAuth(app);
-      db = getFirestore(app);
+      
+      // Initialize Firestore with robust local persistent cache for offline-first reliability
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
+      });
+      
       isCloudConnected = true;
     }
   } catch (err) {

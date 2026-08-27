@@ -1,0 +1,21 @@
+[package]
+name = "shop-management-system"
+version = "1.0.10"
+description = "Shop Management System"
+authors = ["shahin0964"]
+license = "MIT"
+repository = "https://github.com/shahin0964/Shop-Management-"
+edition = "2021"
+rust-version = "1.70"
+
+[build-dependencies]
+tauri-build = { version = "1.5" }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.5", features = ["api-all", "updater"] }
+
+[features]
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]
