@@ -82,6 +82,7 @@ jobs:
           echo "Building Android release v$VERSION_NAME (Code: $VERSION_CODE)"
           
           cd android
+          chmod +x ./gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=release.jks \
             -Pandroid.injected.signing.store.password="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
