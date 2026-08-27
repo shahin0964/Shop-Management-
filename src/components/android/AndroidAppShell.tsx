@@ -45,11 +45,7 @@ import { AndroidExpensesView } from './views/AndroidExpensesView.tsx';
 import { AndroidReportsView } from './views/AndroidReportsView.tsx';
 import { AndroidApkBuildModal } from './views/AndroidApkBuildModal.tsx';
 
-interface AndroidAppShellProps {
-  onSwitchToWebPlatform: () => void;
-}
-
-export const AndroidAppShell: React.FC<AndroidAppShellProps> = ({ onSwitchToWebPlatform }) => {
+export const AndroidAppShell: React.FC = () => {
   const { user, owner, signOut, isCloudConnected } = useAuth();
   const { shops, activeShop, setActiveShop } = useShop();
   const currency = owner?.currencySymbol || '৳';
@@ -57,21 +53,6 @@ export const AndroidAppShell: React.FC<AndroidAppShellProps> = ({ onSwitchToWebP
   const [currentTab, setCurrentTab] = useState<AndroidTab>('dashboard');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
-  const [isDeviceFrame, setIsDeviceFrame] = useState(true);
-
-  // Clock state for status bar
-  const [timeStr, setTimeStr] = useState('');
-  useEffect(() => {
-    const updateTime = () => {
-      const d = new Date();
-      setTimeStr(
-        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-      );
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 10000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Print Modal State
   const [printableDoc, setPrintableDoc] = useState<PrintableDocument | null>(null);
@@ -102,10 +83,7 @@ export const AndroidAppShell: React.FC<AndroidAppShellProps> = ({ onSwitchToWebP
 
             <div>
               <div className="font-bold text-sm leading-tight flex items-center gap-1.5">
-                <span>ShopManager APK</span>
-                <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 text-[9px] font-bold rounded">
-                  POS
-                </span>
+                <span>ShopManager</span>
               </div>
               <div className="text-[10px] text-slate-400 font-medium">
                 Branch: {activeShop?.name || 'Main Branch'}
@@ -114,14 +92,7 @@ export const AndroidAppShell: React.FC<AndroidAppShellProps> = ({ onSwitchToWebP
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsApkModalOpen(true)}
-              className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <Smartphone className="w-3 h-3" />
-              <span>APK Info</span>
-            </button>
+            {/* Optional profile or search button could go here */}
           </div>
         </header>
 

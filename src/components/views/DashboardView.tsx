@@ -1,8 +1,8 @@
 import React from 'react';
-import {
-  Store,
-  Layers,
-  Plus,
+import { 
+  Store, 
+  Layers, 
+  Plus 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useShop } from '../../context/ShopContext.tsx';
@@ -28,24 +28,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigateToShops 
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="md"
-            onClick={onNavigateToShops}
-            leftIcon={<Store className="w-4 h-4" />}
-          >
-            Manage Branches ({shops.length})
+          <Button variant="secondary" size="sm" onClick={onNavigateToShops}>
+            <Store className="w-4 h-4 mr-2" />
+            Manage Branches
           </Button>
-          {shops.length === 0 && (
-            <Button
-              variant="primary"
-              size="md"
-              leftIcon={<Plus className="w-4 h-4" />}
-              onClick={onNavigateToShops}
-            >
-              Add First Branch
-            </Button>
-          )}
+          <Button size="sm" onClick={onNavigateToShops}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Shop
+          </Button>
         </div>
       </div>
 

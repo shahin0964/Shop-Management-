@@ -61,9 +61,6 @@ export const WindowsDashboardView: React.FC<WindowsDashboardViewProps> = ({
       {/* Top Banner & Quick Workstation Header */}
       <div className="p-6 bg-slate-900 text-white rounded-2xl shadow-md border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-bold rounded-full uppercase tracking-wider">
-            Windows Workstation Edition
-          </span>
           <h1 className="text-xl font-black text-white mt-1">
             {activeShop ? `${activeShop.name} (${activeShop.code})` : 'Main Operations Center'}
           </h1>

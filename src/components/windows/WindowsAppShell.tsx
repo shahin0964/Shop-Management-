@@ -51,11 +51,7 @@ import { WindowsReportsView } from './views/WindowsReportsView.tsx';
 import { WindowsExeBuildModal } from './views/WindowsExeBuildModal.tsx';
 import { PrintPreviewModal } from '../print/PrintPreviewModal.tsx';
 
-interface WindowsAppShellProps {
-  onSwitchPlatform: (mode: PlatformMode) => void;
-}
-
-export const WindowsAppShell: React.FC<WindowsAppShellProps> = ({ onSwitchPlatform }) => {
+export const WindowsAppShell: React.FC = () => {
   const { user, signOut, owner, isCloudConnected } = useAuth();
   const { activeShop, shops, setActiveShop } = useShop();
   const currency = owner?.currencySymbol || '৳';
@@ -223,18 +219,8 @@ export const WindowsAppShell: React.FC<WindowsAppShellProps> = ({ onSwitchPlatfo
         </main>
       </div>
 
-      {/* 4. Windows Desktop Status Bar */}
-      <footer className="h-6 bg-slate-900 text-slate-400 flex items-center justify-between px-3 text-[10px] border-t border-slate-800 shrink-0 font-mono">
-        <div className="flex items-center gap-4">
-          <span>STATUS: READY</span>
-          <span>MEM: 142 MB</span>
-          <span>THREAD: MAIN_UI</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span>PORT: 3000 (Cloud Proxy)</span>
-          <span>KEYBOARD: HOTKEYS ACTIVE</span>
-        </div>
-      </footer>
+      {/* 4. Windows Desktop Status Bar - Removed fake info */}
+      <footer className="h-4 bg-slate-900 shrink-0" />
 
       {/* Receipt Thermal/A4 Modal */}
       {activePrintDoc && (

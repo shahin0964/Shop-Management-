@@ -9,8 +9,6 @@ import { useShop } from '../../context/ShopContext.tsx';
 interface AppShellProps {
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
-  onSwitchToAndroidPlatform?: () => void;
-  onSwitchToWindowsPlatform?: () => void;
   children: React.ReactNode;
 }
 
@@ -31,8 +29,6 @@ const TAB_TITLES: Record<NavigationTab, string> = {
 export const AppShell: React.FC<AppShellProps> = ({
   currentTab,
   onSelectTab,
-  onSwitchToAndroidPlatform,
-  onSwitchToWindowsPlatform,
   children,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -98,8 +94,6 @@ export const AppShell: React.FC<AppShellProps> = ({
           viewTitle={TAB_TITLES[currentTab]}
           onOpenMobileMenu={() => setIsMobileOpen(true)}
           onOpenCreateShopModal={() => setIsCreateShopOpen(true)}
-          onSwitchToAndroidPlatform={onSwitchToAndroidPlatform}
-          onSwitchToWindowsPlatform={onSwitchToWindowsPlatform}
         />
 
 

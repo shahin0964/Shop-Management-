@@ -79,19 +79,17 @@ function MainApp() {
   }
 
   if (platformMode === 'ANDROID_APK') {
-    return <AndroidAppShell onSwitchToWebPlatform={() => setPlatformMode('WEB')} />;
+    return <AndroidAppShell />;
   }
 
   if (platformMode === 'WINDOWS_EXE') {
-    return <WindowsAppShell onSwitchPlatform={setPlatformMode} />;
+    return <WindowsAppShell />;
   }
 
   return (
     <AppShell
       currentTab={currentTab}
       onSelectTab={setCurrentTab}
-      onSwitchToAndroidPlatform={() => setPlatformMode('ANDROID_APK')}
-      onSwitchToWindowsPlatform={() => setPlatformMode('WINDOWS_EXE')}
     >
       {currentTab === 'dashboard' && <DashboardView onNavigateToShops={() => setCurrentTab('shops')} />}
       {currentTab === 'sales' && <SalesView />}

@@ -8,16 +8,12 @@ interface HeaderProps {
   viewTitle: string;
   onOpenMobileMenu: () => void;
   onOpenCreateShopModal?: () => void;
-  onSwitchToAndroidPlatform?: () => void;
-  onSwitchToWindowsPlatform?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   viewTitle,
   onOpenMobileMenu,
   onOpenCreateShopModal,
-  onSwitchToAndroidPlatform,
-  onSwitchToWindowsPlatform,
 }) => {
   const { user, signOut, isCloudConnected } = useAuth();
 
