@@ -1,0 +1,411 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role and shop assignments",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["OWNER", "SHOP_MANAGER", "CASHIER", "STAFF"] },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "assignedShopIds": { "type": "array" },
+        "phone": { "type": "string", "maxLength": 32 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "ownerId", "isActive", "createdAt", "updatedAt"]
+    },
+    "OwnerProfile": {
+      "title": "OwnerProfile",
+      "description": "Master tenant owner record for multi-shop management",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "businessName": { "type": "string", "maxLength": 128 },
+        "legalName": { "type": "string", "maxLength": 128 },
+        "primaryEmail": { "type": "string", "maxLength": 128 },
+        "primaryPhone": { "type": "string", "maxLength": 32 },
+        "currencyCode": { "type": "string", "maxLength": 8 },
+        "currencySymbol": { "type": "string", "maxLength": 8 },
+        "timezone": { "type": "string", "maxLength": 64 },
+        "activeShopCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "businessName", "primaryEmail", "currencyCode", "currencySymbol", "createdAt", "updatedAt"]
+    },
+    "Shop": {
+      "title": "Shop",
+      "description": "Branch/Shop entity under an owner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 32 },
+        "address": { "type": "string", "maxLength": 256 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "maxLength": 128 },
+        "isMainBranch": { "type": "boolean" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "name", "code", "isMainBranch", "isActive", "createdAt", "updatedAt"]
+    },
+    "ProductCategory": {
+      "title": "ProductCategory",
+      "description": "Category for grouping products within a shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 256 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "name", "createdAt", "updatedAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product catalog item with barcode, pricing, and stock under a shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 64 },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "categoryId": { "type": "string", "maxLength": 128 },
+        "brand": { "type": "string", "maxLength": 64 },
+        "unit": { "type": "string", "maxLength": 32 },
+        "costPrice": { "type": "number" },
+        "sellingPrice": { "type": "number" },
+        "currentStock": { "type": "number" },
+        "minStockAlert": { "type": "number" },
+        "description": { "type": "string", "maxLength": 500 },
+        "imageUrl": { "type": "string", "maxLength": 512 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "name", "code", "unit", "costPrice", "sellingPrice", "currentStock", "isActive", "createdAt", "updatedAt"]
+    },
+    "Purchase": {
+      "title": "Purchase",
+      "description": "Purchase and stock-in transaction recording historical unit cost and quantities",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 128 },
+        "productCode": { "type": "string", "maxLength": 64 },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "unit": { "type": "string", "maxLength": 32 },
+        "quantity": { "type": "number" },
+        "unitCost": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "purchaseDate": { "type": "string", "maxLength": 64 },
+        "supplierName": { "type": "string", "maxLength": 128 },
+        "invoiceNumber": { "type": "string", "maxLength": 64 },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "productId", "productName", "unit", "quantity", "unitCost", "totalCost", "purchaseDate", "createdBy", "createdAt", "updatedAt"]
+    },
+    "InventoryMovement": {
+      "title": "InventoryMovement",
+      "description": "Traceable audit movement log recording every stock change",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 128 },
+        "productCode": { "type": "string", "maxLength": 64 },
+        "type": { "type": "string", "enum": ["OPENING_STOCK", "PURCHASE", "ADJUSTMENT", "SALE", "TRANSFER_IN", "TRANSFER_OUT"] },
+        "quantity": { "type": "number" },
+        "previousStock": { "type": "number" },
+        "newStock": { "type": "number" },
+        "referenceId": { "type": "string", "maxLength": 128 },
+        "reason": { "type": "string", "maxLength": 256 },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "productId", "productName", "type", "quantity", "previousStock", "newStock", "createdBy", "createdAt"]
+    },
+    "StockTransfer": {
+      "title": "StockTransfer",
+      "description": "Stock transfer record between two shops of the same owner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "transferNumber": { "type": "string", "maxLength": 64 },
+        "sourceShopId": { "type": "string", "maxLength": 128 },
+        "sourceShopName": { "type": "string", "maxLength": 128 },
+        "destinationShopId": { "type": "string", "maxLength": 128 },
+        "destinationShopName": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["COMPLETED", "FAILED", "DRAFT", "PENDING_APPROVAL", "DISPATCHED", "RECEIVED", "REJECTED", "CANCELLED"] },
+        "items": { "type": "array" },
+        "totalItemCount": { "type": "number" },
+        "totalQuantity": { "type": "number" },
+        "totalEstimatedValue": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 500 },
+        "initiatedBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "transferNumber", "sourceShopId", "destinationShopId", "status", "initiatedBy", "createdAt", "updatedAt"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Sale transaction and invoice recording items, totals, payment, and shop scope",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "saleNumber": { "type": "string", "maxLength": 64 },
+        "subtotalAmount": { "type": "number" },
+        "discountAmount": { "type": "number" },
+        "taxAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "dueAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["PAID", "PARTIAL", "DUE"] },
+        "paymentMethod": { "type": "string", "enum": ["CASH", "BKASH", "NAGAD", "ROCKET", "CARD", "DUE_CREDIT", "SPLIT"] },
+        "customerName": { "type": "string", "maxLength": 128 },
+        "customerPhone": { "type": "string", "maxLength": 32 },
+        "note": { "type": "string", "maxLength": 500 },
+        "platformCreated": { "type": "string", "enum": ["WEB", "ANDROID", "WINDOWS"] },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "saleNumber", "totalAmount", "paidAmount", "dueAmount", "paymentStatus", "paymentMethod", "createdBy", "createdAt", "updatedAt"]
+    },
+    "SaleItem": {
+      "title": "SaleItem",
+      "description": "Historical snapshot item within a sale order preserving prices at time of transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "saleId": { "type": "string", "maxLength": 128 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 128 },
+        "productCode": { "type": "string", "maxLength": 64 },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "unit": { "type": "string", "maxLength": 32 },
+        "quantity": { "type": "number" },
+        "unitPrice": { "type": "number" },
+        "costPrice": { "type": "number" },
+        "discount": { "type": "number" },
+        "lineTotal": { "type": "number" }
+      },
+      "required": ["id", "saleId", "productId", "productName", "unit", "quantity", "unitPrice", "costPrice", "lineTotal"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer entity scoped to owner and shop for due tracking and ledger history",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "address": { "type": "string", "maxLength": 256 },
+        "note": { "type": "string", "maxLength": 500 },
+        "isActive": { "type": "boolean" },
+        "totalSalesCount": { "type": "number" },
+        "totalInvoiced": { "type": "number" },
+        "totalPaid": { "type": "number" },
+        "currentDue": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "name", "isActive", "createdAt", "updatedAt"]
+    },
+    "CustomerPayment": {
+      "title": "CustomerPayment",
+      "description": "Customer payment record allocated to outstanding sales dues",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "customerId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["CASH", "BKASH", "NAGAD", "ROCKET", "CARD", "DUE_CREDIT", "SPLIT"] },
+        "reference": { "type": "string", "maxLength": 128 },
+        "note": { "type": "string", "maxLength": 500 },
+        "paymentDate": { "type": "string", "maxLength": 64 },
+        "allocatedSales": { "type": "array" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "customerId", "amount", "paymentMethod", "paymentDate", "createdBy", "createdAt", "updatedAt"]
+    },
+    "TelecomRecharge": {
+      "title": "TelecomRecharge",
+      "description": "Mobile operator recharge / load transaction record scoped to shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "operator": { "type": "string", "maxLength": 64 },
+        "customerPhone": { "type": "string", "maxLength": 32 },
+        "amount": { "type": "number" },
+        "reference": { "type": "string", "maxLength": 128 },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "operator", "customerPhone", "amount", "createdBy", "createdAt", "updatedAt"]
+    },
+    "MfsTransaction": {
+      "title": "MfsTransaction",
+      "description": "Mobile Financial Service (bKash, Nagad, Rocket, etc.) transaction record scoped to shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "provider": { "type": "string", "enum": ["BKASH", "NAGAD", "ROCKET", "UPAY", "OTHER"] },
+        "type": { "type": "string", "enum": ["CASH_IN", "CASH_OUT", "SEND_MONEY", "RECEIVE_MONEY", "PAYMENT"] },
+        "amount": { "type": "number" },
+        "customerPhone": { "type": "string", "maxLength": 32 },
+        "reference": { "type": "string", "maxLength": 128 },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "provider", "type", "amount", "customerPhone", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Shop operational expense entry scoped to owner and shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "categoryId": { "type": "string", "maxLength": 128 },
+        "categoryName": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 256 },
+        "amount": { "type": "number" },
+        "expenseDate": { "type": "string", "format": "date-time" },
+        "paymentMethod": { "type": "string", "maxLength": 64 },
+        "note": { "type": "string", "maxLength": 500 },
+        "isActive": { "type": "boolean" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "categoryName", "title", "amount", "expenseDate", "createdBy", "createdAt", "updatedAt"]
+    },
+    "ExpenseCategory": {
+      "title": "ExpenseCategory",
+      "description": "Category classification for shop operational expenses",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "shopId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "isSystem": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "shopId", "name", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/owners/{ownerId}": {
+      "schema": "OwnerProfile",
+      "description": "Master owner profile and account metadata."
+    },
+    "/owners/{ownerId}/shops/{shopId}": {
+      "schema": "Shop",
+      "description": "Shops and branches belonging to the owner."
+    },
+    "/owners/{ownerId}/shops/{shopId}/categories/{categoryId}": {
+      "schema": "ProductCategory",
+      "description": "Product categories scoped to a specific shop/branch."
+    },
+    "/owners/{ownerId}/shops/{shopId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Products scoped to a specific shop/branch with barcode, stock, and pricing."
+    },
+    "/owners/{ownerId}/shops/{shopId}/purchases/{purchaseId}": {
+      "schema": "Purchase",
+      "description": "Purchase and stock-in records scoped to a specific branch."
+    },
+    "/owners/{ownerId}/shops/{shopId}/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Sales orders and POS transaction invoices scoped to a specific shop."
+    },
+    "/owners/{ownerId}/shops/{shopId}/sales/{saleId}/items/{itemId}": {
+      "schema": "SaleItem",
+      "description": "Historical sale line items with product snapshots."
+    },
+    "/owners/{ownerId}/shops/{shopId}/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer profiles and ledger summary scoped to a specific shop."
+    },
+    "/owners/{ownerId}/shops/{shopId}/customers/{customerId}/payments/{paymentId}": {
+      "schema": "CustomerPayment",
+      "description": "Payment records applied against customer dues."
+    },
+    "/owners/{ownerId}/shops/{shopId}/recharges/{rechargeId}": {
+      "schema": "TelecomRecharge",
+      "description": "Mobile recharge transactions scoped to a specific shop."
+    },
+    "/owners/{ownerId}/shops/{shopId}/mfs_transactions/{mfsId}": {
+      "schema": "MfsTransaction",
+      "description": "MFS (bKash, Nagad, Rocket) transactions scoped to a specific shop."
+    },
+    "/owners/{ownerId}/shops/{shopId}/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Shop operational expenses scoped to a specific shop."
+    },
+    "/owners/{ownerId}/shops/{shopId}/expense_categories/{categoryId}": {
+      "schema": "ExpenseCategory",
+      "description": "Custom expense categories scoped to a specific shop."
+    },
+    "/owners/{ownerId}/shops/{shopId}/movements/{movementId}": {
+      "schema": "InventoryMovement",
+      "description": "Traceable inventory movement audit trail scoped to a specific branch."
+    },
+    "/owners/{ownerId}/transfers/{transferId}": {
+      "schema": "StockTransfer",
+      "description": "Inter-branch stock transfer orders and audit trails."
+    },
+    "/owners/{ownerId}/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Staff and user profiles belonging to this owner organization."
+    },
+    "/users/{userId}/private/profile": {
+      "schema": "UserProfile",
+      "description": "Private root user metadata mapping UID to ownerId."
+    }
+  }
+}

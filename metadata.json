@@ -1,0 +1,6 @@
+{
+  "name": "Shop Management System",
+  "description": "Multi-platform Shop Management System with multi-owner hierarchy, shop-level category & product management, purchase transactions with historical cost retention, atomic stock adjustments, POS terminal with cart & stock reduction, and immutable sales history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

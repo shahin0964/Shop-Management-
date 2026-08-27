@@ -1,0 +1,420 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Role & Membership Lookup
+    function isTenantOwner(ownerId) {
+      return isSignedIn() && request.auth.uid == ownerId;
+    }
+
+    function getUserDoc(ownerId) {
+      return get(/databases/$(database)/documents/owners/$(ownerId)/users/$(request.auth.uid)).data;
+    }
+
+    function isStaffOfOwner(ownerId) {
+      return isSignedIn() && (
+        isTenantOwner(ownerId) ||
+        exists(/databases/$(database)/documents/owners/$(ownerId)/users/$(request.auth.uid))
+      );
+    }
+
+    function isShopAuthorized(ownerId, shopId) {
+      return isTenantOwner(ownerId) || (
+        isStaffOfOwner(ownerId) && (
+          shopId in getUserDoc(ownerId).assignedShopIds ||
+          getUserDoc(ownerId).role == 'OWNER'
+        )
+      );
+    }
+
+    // ==========================================
+    // Master Owner Profile
+    // ==========================================
+    match /owners/{ownerId} {
+      allow get: if isSignedIn() && (isTenantOwner(ownerId) || isStaffOfOwner(ownerId));
+      allow list: if isSignedIn() && request.auth.uid == ownerId;
+      allow create: if isSignedIn() && request.auth.uid == ownerId && isValidId(ownerId) &&
+        incoming().id == ownerId &&
+        incoming().businessName is string && incoming().businessName.size() >= 2 && incoming().businessName.size() <= 128 &&
+        incoming().primaryEmail is string && incoming().primaryEmail.size() <= 128 &&
+        incoming().currencyCode is string && incoming().currencyCode.size() <= 8 &&
+        incoming().currencySymbol is string && incoming().currencySymbol.size() <= 8 &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isTenantOwner(ownerId) &&
+        incoming().id == existing().id &&
+        incoming().businessName is string && incoming().businessName.size() <= 128 &&
+        incoming().currencyCode is string && incoming().currencyCode.size() <= 8 &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['businessName', 'legalName', 'primaryEmail', 'primaryPhone', 'currencyCode', 'currencySymbol', 'timezone', 'activeShopCount', 'updatedAt']);
+      allow delete: if false; // Tenant accounts cannot be deleted directly via client SDK
+
+      // ========================================
+      // Shop / Branch Sub-collection
+      // ========================================
+      match /shops/{shopId} {
+        allow get: if isValidId(shopId) && isStaffOfOwner(ownerId);
+        allow list: if isStaffOfOwner(ownerId);
+        allow create: if isTenantOwner(ownerId) && isValidId(shopId) &&
+          incoming().ownerId == ownerId &&
+          incoming().name is string && incoming().name.size() >= 2 && incoming().name.size() <= 128 &&
+          incoming().code is string && incoming().code.size() <= 32 &&
+          incoming().isMainBranch is bool &&
+          incoming().isActive is bool &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+        allow update: if isTenantOwner(ownerId) && isValidId(shopId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().name is string && incoming().name.size() <= 128 &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'address', 'phone', 'email', 'isMainBranch', 'isActive', 'updatedAt']);
+        allow delete: if isTenantOwner(ownerId) && isValidId(shopId);
+
+        // Shop Categories Sub-collection
+        match /categories/{categoryId} {
+          allow get: if isValidId(categoryId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(categoryId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update: if isShopAuthorized(ownerId, shopId) && isValidId(categoryId) &&
+            incoming().ownerId == existing().ownerId &&
+            incoming().shopId == existing().shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+            incoming().updatedAt == request.time &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'updatedAt']);
+          allow delete: if isTenantOwner(ownerId) && isValidId(categoryId);
+        }
+
+        // Shop Products Sub-collection
+        match /products/{productId} {
+          allow get: if isValidId(productId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(productId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+            incoming().costPrice is number && incoming().costPrice >= 0 &&
+            incoming().sellingPrice is number && incoming().sellingPrice >= 0 &&
+            incoming().currentStock is number &&
+            incoming().unit is string && incoming().unit.size() <= 32 &&
+            incoming().isActive is bool &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update: if isShopAuthorized(ownerId, shopId) && isValidId(productId) &&
+            incoming().ownerId == existing().ownerId &&
+            incoming().shopId == existing().shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+            incoming().costPrice is number && incoming().costPrice >= 0 &&
+            incoming().sellingPrice is number && incoming().sellingPrice >= 0 &&
+            incoming().currentStock is number &&
+            incoming().updatedAt == request.time &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'barcode', 'categoryId', 'brand', 'unit', 'costPrice', 'sellingPrice', 'currentStock', 'minStockAlert', 'description', 'imageUrl', 'isActive', 'updatedAt']);
+          allow delete: if isTenantOwner(ownerId) && isValidId(productId);
+        }
+
+        // Shop Inventory Sub-collection
+        match /inventory/{productId} {
+          allow get: if isValidId(productId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(productId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().productId == productId &&
+            incoming().currentStock is number && incoming().currentStock >= 0 &&
+            incoming().availableStock is number &&
+            incoming().lastStockUpdate == request.time;
+          allow update: if isShopAuthorized(ownerId, shopId) && isValidId(productId) &&
+            incoming().ownerId == existing().ownerId &&
+            incoming().shopId == existing().shopId &&
+            incoming().productId == existing().productId &&
+            incoming().currentStock is number &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['currentStock', 'reservedStock', 'availableStock', 'minStockLevel', 'maxStockLevel', 'locationInShop', 'lastStockUpdate', 'updatedBy']);
+          allow delete: if isTenantOwner(ownerId);
+        }
+
+        // Shop Purchases Sub-collection
+        match /purchases/{purchaseId} {
+          allow get: if isValidId(purchaseId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(purchaseId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().productId is string && incoming().productId.size() <= 128 &&
+            incoming().productName is string && incoming().productName.size() <= 128 &&
+            incoming().quantity is number && incoming().quantity > 0 &&
+            incoming().unitCost is number && incoming().unitCost >= 0 &&
+            incoming().totalCost is number && incoming().totalCost >= 0 &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update: if isTenantOwner(ownerId) && isValidId(purchaseId) &&
+            incoming().ownerId == existing().ownerId &&
+            incoming().shopId == existing().shopId &&
+            incoming().productId == existing().productId &&
+            incoming().updatedAt == request.time &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['supplierName', 'invoiceNumber', 'note', 'updatedAt']);
+          allow delete: if isTenantOwner(ownerId) && isValidId(purchaseId);
+        }
+
+        // Shop Sales Sub-collection
+        match /sales/{saleId} {
+          allow get: if isValidId(saleId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(saleId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().saleNumber is string && incoming().saleNumber.size() <= 64 &&
+            incoming().totalAmount is number && incoming().totalAmount >= 0 &&
+            incoming().paidAmount is number && incoming().paidAmount >= 0 &&
+            incoming().dueAmount is number &&
+            incoming().paymentStatus in ['PAID', 'PARTIAL', 'DUE'] &&
+            incoming().paymentMethod is string &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          // Allow payment settlement updates (paidAmount, dueAmount, paymentStatus)
+          allow update: if isShopAuthorized(ownerId, shopId) && isValidId(saleId) &&
+            incoming().ownerId == existing().ownerId &&
+            incoming().shopId == existing().shopId &&
+            incoming().saleNumber == existing().saleNumber &&
+            incoming().totalAmount == existing().totalAmount &&
+            incoming().paidAmount is number && incoming().paidAmount >= 0 &&
+            incoming().dueAmount is number &&
+            incoming().paymentStatus in ['PAID', 'PARTIAL', 'DUE'] &&
+            incoming().updatedAt == request.time &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['paidAmount', 'dueAmount', 'paymentStatus', 'updatedAt']);
+          allow delete: if false; // Immutable financial record
+
+          // Sale Items Sub-collection
+          match /items/{itemId} {
+            allow get, list: if isShopAuthorized(ownerId, shopId);
+            allow create: if isShopAuthorized(ownerId, shopId) && isValidId(itemId) &&
+              incoming().saleId == saleId &&
+              incoming().productId is string &&
+              incoming().quantity is number && incoming().quantity > 0 &&
+              incoming().unitPrice is number && incoming().unitPrice >= 0 &&
+              incoming().lineTotal is number && incoming().lineTotal >= 0;
+            allow update, delete: if false;
+          }
+        }
+
+        // Shop Customers Sub-collection
+        match /customers/{customerId} {
+          allow get: if isValidId(customerId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(customerId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+            incoming().isActive is bool &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update: if isShopAuthorized(ownerId, shopId) && isValidId(customerId) &&
+            incoming().ownerId == existing().ownerId &&
+            incoming().shopId == existing().shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+            incoming().updatedAt == request.time &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'address', 'note', 'isActive', 'totalSalesCount', 'totalInvoiced', 'totalPaid', 'currentDue', 'updatedAt']);
+          allow delete: if isTenantOwner(ownerId) && isValidId(customerId);
+
+          // Customer Payments Sub-collection (Immutable financial record)
+          match /payments/{paymentId} {
+            allow get, list: if isShopAuthorized(ownerId, shopId);
+            allow create: if isShopAuthorized(ownerId, shopId) && isValidId(paymentId) &&
+              incoming().ownerId == ownerId &&
+              incoming().shopId == shopId &&
+              incoming().customerId == customerId &&
+              incoming().amount is number && incoming().amount > 0 &&
+              incoming().paymentMethod is string &&
+              incoming().createdAt == request.time &&
+              incoming().updatedAt == request.time;
+            allow update, delete: if false; // Immutable audit log
+          }
+        }
+
+        // Shop Recharges Sub-collection (Immutable financial audit log)
+        match /recharges/{rechargeId} {
+          allow get: if isValidId(rechargeId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(rechargeId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().operator is string && incoming().operator.size() >= 1 && incoming().operator.size() <= 64 &&
+            incoming().customerPhone is string && incoming().customerPhone.size() >= 3 && incoming().customerPhone.size() <= 32 &&
+            incoming().amount is number && incoming().amount > 0 &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update, delete: if false; // Immutable audit log
+        }
+
+        // Shop MFS Transactions Sub-collection (bKash, Nagad, Rocket, etc. - Immutable financial audit log)
+        match /mfs_transactions/{mfsId} {
+          allow get: if isValidId(mfsId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(mfsId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().provider in ['BKASH', 'NAGAD', 'ROCKET', 'UPAY', 'OTHER'] &&
+            incoming().type in ['CASH_IN', 'CASH_OUT', 'SEND_MONEY', 'RECEIVE_MONEY', 'PAYMENT'] &&
+            incoming().customerPhone is string && incoming().customerPhone.size() >= 3 && incoming().customerPhone.size() <= 32 &&
+            incoming().amount is number && incoming().amount > 0 &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update, delete: if false; // Immutable audit log
+        }
+
+        // Shop Operational Expenses Sub-collection
+        match /expenses/{expenseId} {
+          allow get: if isValidId(expenseId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(expenseId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().title is string && incoming().title.size() >= 1 && incoming().title.size() <= 256 &&
+            incoming().amount is number && incoming().amount > 0 &&
+            incoming().createdAt == request.time &&
+            incoming().updatedAt == request.time;
+          allow update: if isShopAuthorized(ownerId, shopId) && isValidId(expenseId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().title is string && incoming().title.size() >= 1 && incoming().title.size() <= 256 &&
+            incoming().amount is number && incoming().amount > 0 &&
+            incoming().updatedAt == request.time;
+          allow delete: if isShopAuthorized(ownerId, shopId) && isValidId(expenseId);
+        }
+
+        // Shop Expense Categories Sub-collection
+        match /expense_categories/{categoryId} {
+          allow get: if isValidId(categoryId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create, update: if isShopAuthorized(ownerId, shopId) && isValidId(categoryId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128;
+          allow delete: if isShopAuthorized(ownerId, shopId) && isValidId(categoryId);
+        }
+
+        // Shop Inventory Movements Audit Sub-collection (Immutable)
+        match /movements/{movementId} {
+          allow get: if isValidId(movementId) && isShopAuthorized(ownerId, shopId);
+          allow list: if isShopAuthorized(ownerId, shopId);
+          allow create: if isShopAuthorized(ownerId, shopId) && isValidId(movementId) &&
+            incoming().ownerId == ownerId &&
+            incoming().shopId == shopId &&
+            incoming().productId is string && incoming().productId.size() <= 128 &&
+            incoming().type in ['OPENING_STOCK', 'PURCHASE', 'ADJUSTMENT', 'SALE', 'TRANSFER_IN', 'TRANSFER_OUT'] &&
+            incoming().quantity is number &&
+            incoming().previousStock is number &&
+            incoming().newStock is number &&
+            incoming().createdAt == request.time;
+          allow update, delete: if false; // Immutable audit log
+        }
+      }
+
+      // ========================================
+      // Products Catalog Sub-collection
+      // ========================================
+      match /products/{productId} {
+        allow get: if isValidId(productId) && isStaffOfOwner(ownerId);
+        allow list: if isStaffOfOwner(ownerId);
+        allow create: if isTenantOwner(ownerId) && isValidId(productId) &&
+          incoming().ownerId == ownerId &&
+          incoming().name is string && incoming().name.size() >= 1 && incoming().name.size() <= 128 &&
+          incoming().code is string && incoming().code.size() <= 64 &&
+          incoming().unit is string && incoming().unit.size() <= 32 &&
+          incoming().costPrice is number && incoming().costPrice >= 0 &&
+          incoming().sellingPrice is number && incoming().sellingPrice >= 0 &&
+          incoming().isActive is bool &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+        allow update: if isTenantOwner(ownerId) && isValidId(productId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().name is string && incoming().name.size() <= 128 &&
+          incoming().costPrice is number && incoming().costPrice >= 0 &&
+          incoming().sellingPrice is number && incoming().sellingPrice >= 0 &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'barcode', 'categoryId', 'brand', 'unit', 'costPrice', 'sellingPrice', 'minStockAlert', 'description', 'isActive', 'updatedAt']);
+        allow delete: if isTenantOwner(ownerId) && isValidId(productId);
+      }
+
+      // ========================================
+      // Stock Transfers Sub-collection
+      // ========================================
+      match /transfers/{transferId} {
+        allow get: if isValidId(transferId) && isStaffOfOwner(ownerId);
+        allow list: if isStaffOfOwner(ownerId);
+        allow create: if isStaffOfOwner(ownerId) && isValidId(transferId) &&
+          incoming().ownerId == ownerId &&
+          incoming().transferNumber is string && incoming().transferNumber.size() <= 64 &&
+          incoming().sourceShopId is string && incoming().sourceShopId.size() <= 128 &&
+          incoming().destinationShopId is string && incoming().destinationShopId.size() <= 128 &&
+          incoming().sourceShopId != incoming().destinationShopId &&
+          incoming().status in ['COMPLETED', 'DRAFT', 'PENDING_APPROVAL', 'DISPATCHED', 'RECEIVED', 'REJECTED', 'CANCELLED'] &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+        allow update: if isStaffOfOwner(ownerId) && isValidId(transferId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().sourceShopId == existing().sourceShopId &&
+          incoming().destinationShopId == existing().destinationShopId &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'items', 'totalItemCount', 'totalEstimatedValue', 'notes', 'dispatchedBy', 'receivedBy', 'auditTrail', 'updatedAt']);
+        allow delete: if isTenantOwner(ownerId) && existing().status == 'DRAFT';
+      }
+
+      // ========================================
+      // Users & Staff Sub-collection
+      // ========================================
+      match /users/{userId} {
+        allow get: if isValidId(userId) && (isTenantOwner(ownerId) || request.auth.uid == userId);
+        allow list: if isTenantOwner(ownerId);
+        allow create: if (isTenantOwner(ownerId) || (request.auth.uid == userId && incoming().role == 'OWNER' && ownerId == userId)) &&
+          incoming().ownerId == ownerId &&
+          incoming().uid == userId &&
+          incoming().role in ['OWNER', 'SHOP_MANAGER', 'CASHIER', 'STAFF'] &&
+          incoming().email is string && incoming().email.size() <= 128 &&
+          incoming().isActive is bool &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time;
+        allow update: if isTenantOwner(ownerId) && isValidId(userId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().uid == existing().uid &&
+          incoming().updatedAt == request.time &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'role', 'assignedShopIds', 'phone', 'isActive', 'updatedAt']);
+        allow delete: if isTenantOwner(ownerId) && userId != ownerId;
+      }
+    }
+
+    // Root Private User Directory (Mapping Auth UID to Owner ID)
+    match /users/{userId}/private/profile {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow create, update: if isSignedIn() && request.auth.uid == userId &&
+        incoming().uid == userId &&
+        incoming().updatedAt == request.time;
+      allow delete: if false;
+    }
+  }
+}

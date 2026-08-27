@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@media print {
+  /* Hide all background application shell, modals backdrop, navigation header, sidebars */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print,
+  .no-print-backdrop,
+  header,
+  nav,
+  aside,
+  button {
+    display: none !important;
+  }
+
+  /* Make printable document container full size and isolated */
+  .printable-document-container {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
+  /* Optimize thermal and A4 print text contrast */
+  @page {
+    margin: 0.5cm;
+    size: auto;
+  }
+}
