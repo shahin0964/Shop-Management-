@@ -86,53 +86,9 @@ export const AndroidAppShell: React.FC<AndroidAppShellProps> = ({ onSwitchToWebP
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-0 sm:p-4 md:p-6 font-sans antialiased selection:bg-blue-500 selection:text-white">
-      {/* Top Controls Bar for Tester / Reviewer */}
-      <div className="w-full max-w-md mb-3 px-3 flex items-center justify-between text-white text-xs">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold tracking-wide">Android APK Mode Active</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsDeviceFrame(!isDeviceFrame)}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-            <span>{isDeviceFrame ? 'Full Width' : 'Device Frame'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onSwitchToWebPlatform}
-            className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1"
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span>Web Platform</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Android Phone Mockup Wrapper */}
-      <div
-        className={`w-full transition-all duration-300 ${
-          isDeviceFrame
-            ? 'max-w-md rounded-[40px] shadow-2xl border-[10px] border-slate-800 bg-slate-950 overflow-hidden relative'
-            : 'max-w-4xl min-h-screen bg-slate-900 overflow-hidden relative'
-        }`}
-      >
-        {/* Android Status Bar */}
-        <div className="h-7 bg-slate-950 text-slate-400 px-6 flex items-center justify-between text-[11px] font-mono select-none shrink-0 border-b border-slate-900">
-          <span>{timeStr || '12:00'}</span>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-emerald-400 font-bold">5G</span>
-            <Wifi className="w-3 h-3 text-slate-300" />
-            <Battery className="w-3.5 h-3.5 text-slate-300" />
-          </div>
-        </div>
-
+    <div className="min-h-screen bg-slate-900 flex flex-col font-sans antialiased selection:bg-blue-500 selection:text-white">
+      {/* Main Android Production Wrapper */}
+      <div className="flex-1 h-screen bg-slate-950 overflow-hidden relative flex flex-col">
         {/* Android Top App Bar */}
         <header className="h-14 bg-slate-900 text-white px-4 flex items-center justify-between border-b border-slate-800 shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-3">
@@ -445,18 +401,6 @@ export const AndroidAppShell: React.FC<AndroidAppShellProps> = ({ onSwitchToWebP
 
             {/* Drawer Footer Actions */}
             <div className="p-4 border-t border-slate-800 space-y-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDrawerOpen(false);
-                  onSwitchToWebPlatform();
-                }}
-                className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Monitor className="w-4 h-4" />
-                <span>Switch to Web Application</span>
-              </button>
-
               <button
                 type="button"
                 onClick={() => signOut()}

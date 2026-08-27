@@ -35,7 +35,31 @@ import { SettingsView } from './components/views/SettingsView.tsx';
 function MainApp() {
   const { isAuthenticated, isLoading } = useAuth();
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
-  const [platformMode, setPlatformMode] = useState<PlatformMode>('WEB');
+  const [platformMode, setPlatformMode] = useState<PlatformMode>(() => {
+    if (typeof window !== 'undefined') {
+      const ua = window.navigator.userAgent.toLowerCase();
+      
+      // 1. Android/Capacitor Detection
+      // @ts-ignore
+      if (window.Capacitor?.isNativePlatform || 
+          // @ts-ignore
+          window.Capacitor?.platform === 'android' || 
+          ua.includes('capacitor') ||
+          ua.includes('android-capacitor')) {
+        return 'ANDROID_APK';
+      }
+      
+      // 2. Windows/Tauri Detection
+      // @ts-ignore
+      if (window.__TAURI__ || 
+          // @ts-ignore
+          window.__TAURI_INTERNALS__ || 
+          ua.includes('tauri')) {
+        return 'WINDOWS_EXE';
+      }
+    }
+    return 'WEB';
+  });
 
   if (isLoading) {
     return (
