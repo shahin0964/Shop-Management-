@@ -1,0 +1,57 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:3000",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "Shop Management System",
+    "version": "1.0.10"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://*"]
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": ["all"],
+      "identifier": "com.shahin.shopmanagement",
+      "icon": [],
+      "windows": {
+        "digestAlgorithm": "sha256",
+        "wix": {
+          "language": "en-US"
+        }
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Shop Management System",
+        "width": 1280,
+        "height": 720,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://raw.githubusercontent.com/shahin0964/Shop-Management-/main/release_metadata.json"
+      ],
+      "pubkey": ""
+    }
+  }
+}
