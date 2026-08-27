@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install Project Dependencies
         run: npm install
@@ -52,7 +52,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install Project Dependencies
         run: npm install
@@ -125,7 +125,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install Rust Stable
         uses: dtolnay/rust-toolchain@stable
@@ -136,13 +136,21 @@ jobs:
       - name: Install Project Dependencies
         run: npm install
 
+      - name: Check for Tauri Signing Secrets
+        run: |
+          if ("${{ secrets.TAURI_PRIVATE_KEY }}" -eq "") {
+            Write-Error "❌ Error: Required secret TAURI_PRIVATE_KEY is missing! Failing production build."
+            exit 1
+          }
+        shell: pwsh
+
       - name: Compile Windows Installer via Tauri
         run: |
           npm run build
           npm run tauri build
         env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
       - name: Copy Windows Executable Installer
         shell: pwsh
@@ -186,7 +194,7 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Create Workspaces Directories
         run: |
