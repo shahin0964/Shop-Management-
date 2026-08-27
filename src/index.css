@@ -37,3 +37,31 @@
     size: auto;
   }
 }
+
+/* Custom Scrollbar for Desktop/Windows Workstation */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* High-Density Workstation Layout Utilities */
+.workstation-table-row {
+  @apply hover:bg-blue-50/50 transition-colors border-b border-slate-100 last:border-0;
+}
+
+.workstation-header-pill {
+  @apply px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold border border-slate-200 uppercase tracking-wider;
+}

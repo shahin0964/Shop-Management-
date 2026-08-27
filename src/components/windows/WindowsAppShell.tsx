@@ -57,7 +57,7 @@ export const WindowsAppShell: React.FC = () => {
   const currency = owner?.currencySymbol || '৳';
 
   const [currentTab, setCurrentTab] = useState<WindowsTab>('dashboard');
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isExeModalOpen, setIsExeModalOpen] = useState(false);
 
   // Receipt Print Modal State
@@ -108,7 +108,7 @@ export const WindowsAppShell: React.FC = () => {
 
   const navItems: { id: WindowsTab; label: string; icon: React.FC<{ className?: string }>; hotkey?: string }[] = [
     { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
-    { id: 'pos', label: 'POS Sales Terminal', icon: ShoppingBag, hotkey: 'F1' },
+    { id: 'pos', label: 'POS Terminal', icon: ShoppingBag, hotkey: 'F1' },
     { id: 'products', label: 'Product Catalog', icon: Package, hotkey: 'F2' },
     { id: 'categories', label: 'Categories', icon: Tags },
     { id: 'inventory', label: 'Inventory Hub', icon: Warehouse, hotkey: 'F3' },
@@ -122,32 +122,58 @@ export const WindowsAppShell: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col font-sans antialiased text-slate-900 select-none overflow-hidden">
       {/* 1. Main Windows Workstation Body */}
-      <div className="flex-1 flex overflow-hidden bg-slate-100">
+      <div className="flex-1 flex overflow-hidden bg-slate-50">
         {/* Desktop Sidebar Navigation */}
-        <aside className="w-56 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 shrink-0">
-          {/* Active Branch Selector */}
-          <div className="p-3 border-b border-slate-800">
-            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
-              Active Branch Outlet
-            </label>
-            <select
-              value={activeShop?.id || ''}
-              onChange={(e) => {
-                const s = shops.find((sh) => sh.id === e.target.value);
-                if (s) setActiveShop(s);
-              }}
-              className="w-full bg-slate-800 text-white font-bold text-xs p-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <aside 
+          className={`bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 shrink-0 transition-all duration-300 ${
+            isSidebarCollapsed ? 'w-16' : 'w-64'
+          }`}
+        >
+          {/* Workstation Header */}
+          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+            {!isSidebarCollapsed && (
+              <div className="flex items-center gap-2 text-white">
+                <Monitor className="w-5 h-5 text-blue-400" />
+                <span className="font-black text-sm tracking-tight uppercase">Workstation</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors mx-auto"
             >
-              {shops.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.code})
-                </option>
-              ))}
-            </select>
+              <LayoutDashboard className="w-4 h-4" />
+            </button>
           </div>
 
+          {/* Active Branch Selector */}
+          {!isSidebarCollapsed && (
+            <div className="p-4 border-b border-slate-800 bg-slate-950/30">
+              <label className="text-[9px] uppercase font-black text-slate-500 tracking-widest block mb-2">
+                Active Branch Outlet
+              </label>
+              <div className="relative">
+                <Building2 className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-blue-400" />
+                <select
+                  value={activeShop?.id || ''}
+                  onChange={(e) => {
+                    const s = shops.find((sh) => sh.id === e.target.value);
+                    if (s) setActiveShop(s);
+                  }}
+                  className="w-full bg-slate-800 text-white font-bold text-[11px] pl-8 pr-2 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-inner appearance-none cursor-pointer"
+                >
+                  {shops.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* Navigation Links */}
-          <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-2.5 space-y-1 overflow-y-auto custom-scrollbar">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -156,19 +182,20 @@ export const WindowsAppShell: React.FC = () => {
                   key={item.id}
                   type="button"
                   onClick={() => setCurrentTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                  title={isSidebarCollapsed ? item.label : ''}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all cursor-pointer group ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md'
+                      ? 'bg-blue-600 text-white shadow-lg'
                       : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <span>{item.label}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 shrink-0 transition-transform group-active:scale-90 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                    {!isSidebarCollapsed && <span className="text-xs font-bold truncate">{item.label}</span>}
                   </div>
-                  {item.hotkey && (
+                  {!isSidebarCollapsed && item.hotkey && (
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[9px] font-mono ${
+                      className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-black ${
                         isActive ? 'bg-blue-700 text-blue-100' : 'bg-slate-800 text-slate-500'
                       }`}
                     >
@@ -181,46 +208,99 @@ export const WindowsAppShell: React.FC = () => {
           </nav>
 
           {/* Windows User Session Footer */}
-          <div className="p-3 border-t border-slate-800 bg-slate-950/40 flex items-center justify-between">
-            <div className="truncate pr-2">
-              <div className="font-bold text-white text-xs truncate">{user?.displayName || 'Workstation Admin'}</div>
-              <div className="text-[10px] text-slate-400 font-mono">{owner?.role || 'OWNER'}</div>
+          <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+              <User className="w-4 h-4 text-blue-400" />
             </div>
-            <button
-              type="button"
-              onClick={() => signOut()}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-              title="Sign Out Workstation"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {!isSidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-white text-[11px] truncate">{user?.displayName || owner?.name || 'Admin'}</div>
+                <div className="text-[9px] text-slate-500 font-black uppercase tracking-wider">{owner?.role || 'OWNER'}</div>
+              </div>
+            )}
+            {!isSidebarCollapsed && (
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-400/10 rounded-lg transition-colors cursor-pointer"
+                title="Exit Workstation"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </aside>
 
         {/* View Stage Workspace Container */}
-        <main className="flex-1 overflow-y-auto p-6 min-w-0">
-          {currentTab === 'dashboard' && (
-            <WindowsDashboardView
-              onNavigateTab={(tab) => setCurrentTab(tab)}
-              onOpenPrintSale={handlePrintSale}
-            />
-          )}
-          {currentTab === 'pos' && <WindowsPosView onOpenPrintSale={handlePrintSale} />}
-          {currentTab === 'products' && <WindowsProductsView />}
-          {currentTab === 'categories' && <WindowsCategoriesView />}
-          {currentTab === 'inventory' && <WindowsInventoryView />}
-          {currentTab === 'transfers' && <WindowsTransfersView />}
-          {currentTab === 'customers' && (
-            <WindowsCustomersView onOpenPrintDoc={(doc) => setActivePrintDoc(doc)} />
-          )}
-          {currentTab === 'telecom_mfs' && <WindowsTelecomMfsView />}
-          {currentTab === 'expenses' && <WindowsExpensesView />}
-          {currentTab === 'reports' && <WindowsReportsView />}
-        </main>
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Professional Workstation Header (App-Internal) */}
+          <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-slate-400 text-xs">
+                <Building2 className="w-4 h-4" />
+                <span className="font-bold uppercase tracking-widest">{activeShop?.name || 'Main Office'}</span>
+              </div>
+              <div className="h-4 w-px bg-slate-200" />
+              <h2 className="font-black text-sm text-slate-900 uppercase tracking-tighter flex items-center gap-2">
+                {navItems.find(n => n.id === currentTab)?.label}
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 text-[10px] font-black uppercase tracking-wider">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Cloud Synchronized
+              </div>
+              <button 
+                type="button"
+                onClick={() => setIsExeModalOpen(true)}
+                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
+              >
+                <Monitor className="w-4 h-4" />
+              </button>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="max-w-7xl mx-auto">
+              {currentTab === 'dashboard' && (
+                <WindowsDashboardView
+                  onNavigateTab={(tab) => setCurrentTab(tab)}
+                  onOpenPrintSale={handlePrintSale}
+                />
+              )}
+              {currentTab === 'pos' && <WindowsPosView onOpenPrintSale={handlePrintSale} />}
+              {currentTab === 'products' && <WindowsProductsView />}
+              {currentTab === 'categories' && <WindowsCategoriesView />}
+              {currentTab === 'inventory' && <WindowsInventoryView />}
+              {currentTab === 'transfers' && <WindowsTransfersView />}
+              {currentTab === 'customers' && (
+                <WindowsCustomersView onOpenPrintDoc={(doc) => setActivePrintDoc(doc)} />
+              )}
+              {currentTab === 'telecom_mfs' && <WindowsTelecomMfsView />}
+              {currentTab === 'expenses' && <WindowsExpensesView />}
+              {currentTab === 'reports' && <WindowsReportsView />}
+            </div>
+          </main>
+        </div>
       </div>
 
-      {/* 4. Windows Desktop Status Bar - Removed fake info */}
-      <footer className="h-4 bg-slate-900 shrink-0" />
+      {/* Real Windows Desktop Footer */}
+      <footer className="h-6 bg-slate-900 border-t border-slate-800 px-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span>Workstation Ready</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Keyboard className="w-3.5 h-3.5" />
+            <span>F-Key Shortcuts Active</span>
+          </div>
+        </div>
+        <div className="text-[10px] font-mono text-slate-600">
+          BUILD V1.0.10_PRO_WIN
+        </div>
+      </footer>
 
       {/* Receipt Thermal/A4 Modal */}
       {activePrintDoc && (

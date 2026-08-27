@@ -71,315 +71,269 @@ export const AndroidAppShell: React.FC = () => {
       {/* Main Android Production Wrapper */}
       <div className="flex-1 h-screen bg-slate-950 overflow-hidden relative flex flex-col">
         {/* Android Top App Bar */}
-        <header className="h-14 bg-slate-900 text-white px-4 flex items-center justify-between border-b border-slate-800 shrink-0 sticky top-0 z-30">
+        <header className="h-16 bg-slate-900 text-white px-4 flex items-center justify-between border-b border-slate-800 shrink-0 sticky top-0 z-30 shadow-md">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsDrawerOpen(true)}
-              className="p-1.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-all active:scale-90 cursor-pointer"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </button>
 
             <div>
-              <div className="font-bold text-sm leading-tight flex items-center gap-1.5">
+              <div className="font-black text-sm tracking-tight flex items-center gap-1.5 uppercase">
                 <span>ShopManager</span>
+                <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[8px] font-bold rounded border border-blue-500/30">MOBILE</span>
               </div>
-              <div className="text-[10px] text-slate-400 font-medium">
-                Branch: {activeShop?.name || 'Main Branch'}
+              <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                <Store className="w-2.5 h-2.5" />
+                <span>{activeShop?.name || 'Main Branch'}</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Optional profile or search button could go here */}
+            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-black text-blue-400">
+              {owner?.name?.substring(0, 1).toUpperCase() || 'S'}
+            </div>
           </div>
         </header>
 
         {/* Scrollable Viewport Stage */}
-        <main className="min-h-[580px] bg-slate-100 p-3 overflow-y-auto">
-          {currentTab === 'dashboard' && (
-            <AndroidDashboardView
-              onNavigateTab={(tab) => setCurrentTab(tab)}
-              onOpenPrintSale={handleOpenPrintSale}
-            />
-          )}
+        <main className="flex-1 bg-slate-50 overflow-y-auto overflow-x-hidden">
+          <div className="p-4 max-w-md mx-auto">
+            {currentTab === 'dashboard' && (
+              <AndroidDashboardView
+                onNavigateTab={(tab) => setCurrentTab(tab)}
+                onOpenPrintSale={handleOpenPrintSale}
+              />
+            )}
 
-          {currentTab === 'pos' && (
-            <AndroidPosView onOpenPrintSale={handleOpenPrintSale} />
-          )}
+            {currentTab === 'pos' && (
+              <AndroidPosView onOpenPrintSale={handleOpenPrintSale} />
+            )}
 
-          {currentTab === 'products' && <AndroidProductsView />}
+            {currentTab === 'products' && <AndroidProductsView />}
 
-          {currentTab === 'inventory' && <AndroidInventoryView />}
+            {currentTab === 'inventory' && <AndroidInventoryView />}
 
-          {currentTab === 'customers' && (
-            <AndroidCustomersView onOpenPrintDoc={handleOpenPrintDoc} />
-          )}
+            {currentTab === 'customers' && (
+              <AndroidCustomersView onOpenPrintDoc={handleOpenPrintDoc} />
+            )}
 
-          {currentTab === 'transfers' && <AndroidTransfersView />}
+            {currentTab === 'transfers' && <AndroidTransfersView />}
 
-          {currentTab === 'telecom_mfs' && <AndroidTelecomMfsView />}
+            {currentTab === 'telecom_mfs' && <AndroidTelecomMfsView />}
 
-          {currentTab === 'expenses' && <AndroidExpensesView />}
+            {currentTab === 'expenses' && <AndroidExpensesView />}
 
-          {currentTab === 'reports' && <AndroidReportsView />}
+            {currentTab === 'reports' && <AndroidReportsView />}
+          </div>
         </main>
 
         {/* Android Bottom Navigation Bar */}
-        <nav className="h-16 bg-slate-900 border-t border-slate-800 px-3 flex items-center justify-around text-slate-400 shrink-0 sticky bottom-0 z-30">
+        <nav className="h-16 bg-slate-900 border-t border-slate-800 px-2 flex items-center justify-around text-slate-400 shrink-0 sticky bottom-0 z-30 shadow-2xl">
           <button
             type="button"
             onClick={() => setCurrentTab('dashboard')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
-              currentTab === 'dashboard' ? 'text-blue-400 font-bold' : 'hover:text-slate-200'
+            className={`flex-1 flex flex-col items-center gap-1 cursor-pointer transition-all ${
+              currentTab === 'dashboard' ? 'text-blue-400' : 'hover:text-slate-200'
             }`}
           >
-            <Home className="w-5 h-5" />
-            <span className="text-[10px]">Home</span>
+            <div className={`p-1 rounded-xl transition-colors ${currentTab === 'dashboard' ? 'bg-blue-500/10' : ''}`}>
+              <Home className={`w-5 h-5 ${currentTab === 'dashboard' ? 'fill-blue-400/20' : ''}`} />
+            </div>
+            <span className={`text-[9px] font-bold ${currentTab === 'dashboard' ? 'text-blue-400' : 'text-slate-500'}`}>Home</span>
           </button>
 
           <button
             type="button"
             onClick={() => setCurrentTab('pos')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
-              currentTab === 'pos' ? 'text-blue-400 font-bold' : 'hover:text-slate-200'
+            className={`flex-1 flex flex-col items-center gap-1 cursor-pointer transition-all ${
+              currentTab === 'pos' ? 'text-blue-400' : 'hover:text-slate-200'
             }`}
           >
-            <ShoppingBag className="w-5 h-5" />
-            <span className="text-[10px]">POS</span>
+            <div className={`p-1 rounded-xl transition-colors ${currentTab === 'pos' ? 'bg-blue-500/10' : ''}`}>
+              <ShoppingBag className={`w-5 h-5 ${currentTab === 'pos' ? 'fill-blue-400/20' : ''}`} />
+            </div>
+            <span className={`text-[9px] font-bold ${currentTab === 'pos' ? 'text-blue-400' : 'text-slate-500'}`}>Checkout</span>
           </button>
 
           <button
             type="button"
             onClick={() => setCurrentTab('products')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
-              currentTab === 'products' ? 'text-blue-400 font-bold' : 'hover:text-slate-200'
+            className={`flex-1 flex flex-col items-center gap-1 cursor-pointer transition-all ${
+              currentTab === 'products' ? 'text-blue-400' : 'hover:text-slate-200'
             }`}
           >
-            <Package className="w-5 h-5" />
-            <span className="text-[10px]">Products</span>
+            <div className={`p-1 rounded-xl transition-colors ${currentTab === 'products' ? 'bg-blue-500/10' : ''}`}>
+              <Package className={`w-5 h-5 ${currentTab === 'products' ? 'fill-blue-400/20' : ''}`} />
+            </div>
+            <span className={`text-[9px] font-bold ${currentTab === 'products' ? 'text-blue-400' : 'text-slate-500'}`}>Catalog</span>
           </button>
 
           <button
             type="button"
             onClick={() => setCurrentTab('customers')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${
-              currentTab === 'customers' ? 'text-blue-400 font-bold' : 'hover:text-slate-200'
+            className={`flex-1 flex flex-col items-center gap-1 cursor-pointer transition-all ${
+              currentTab === 'customers' ? 'text-blue-400' : 'hover:text-slate-200'
             }`}
           >
-            <Users className="w-5 h-5" />
-            <span className="text-[10px]">Customers</span>
+            <div className={`p-1 rounded-xl transition-colors ${currentTab === 'customers' ? 'bg-blue-500/10' : ''}`}>
+              <Users className={`w-5 h-5 ${currentTab === 'customers' ? 'fill-blue-400/20' : ''}`} />
+            </div>
+            <span className={`text-[9px] font-bold ${currentTab === 'customers' ? 'text-blue-400' : 'text-slate-500'}`}>Ledger</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex flex-col items-center gap-1 cursor-pointer hover:text-slate-200"
+            className="flex-1 flex flex-col items-center gap-1 cursor-pointer hover:text-slate-200 transition-all"
           >
-            <Menu className="w-5 h-5" />
-            <span className="text-[10px]">More</span>
+            <div className="p-1 rounded-xl">
+              <Menu className="w-5 h-5" />
+            </div>
+            <span className="text-[9px] font-bold text-slate-500">More</span>
           </button>
         </nav>
       </div>
 
       {/* Slide-out Navigation Drawer */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex">
-          <div className="w-80 max-w-[85vw] bg-slate-900 text-white h-full flex flex-col shadow-2xl animate-in slide-in-from-left duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex transition-all">
+          <div className="w-[85%] max-w-sm bg-slate-900 text-white h-full flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
             {/* Drawer Header */}
-            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-sm shadow-xs">
+            <div className="p-6 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black flex items-center justify-center text-lg shadow-lg">
                   {owner?.name?.substring(0, 2).toUpperCase() || 'SH'}
                 </div>
                 <div>
-                  <div className="font-bold text-sm">{owner?.name || user?.email || 'Store Owner'}</div>
-                  <div className="text-[10px] text-slate-400">Owner Account</div>
+                  <div className="font-black text-base tracking-tight">{owner?.name || user?.email || 'Store Owner'}</div>
+                  <div className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-0.5">Admin Account</div>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+                className="p-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/50"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Authorized Shop Selector in Drawer */}
-            <div className="p-4 border-b border-slate-800 space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Active Branch / Shop
+            <div className="p-5 border-b border-slate-800 bg-slate-900/50">
+              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">
+                Switch Branch Outlet
               </label>
-              <select
-                value={activeShop?.id || ''}
-                onChange={(e) => {
-                  const s = shops.find((item) => item.id === e.target.value);
-                  if (s) setActiveShop(s);
-                }}
-                className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {shops.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} (#{s.code})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <Store className="absolute left-3 top-2.5 w-4 h-4 text-blue-400" />
+                <select
+                  value={activeShop?.id || ''}
+                  onChange={(e) => {
+                    const s = shops.find((item) => item.id === e.target.value);
+                    if (s) setActiveShop(s);
+                  }}
+                  className="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+                >
+                  {shops.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} (#{s.code})
+                    </option>
+                  ))}
+                </select>
+                <ChevronRight className="absolute right-3 top-2.5 w-4 h-4 text-slate-500 rotate-90" />
+              </div>
             </div>
 
-            {/* Drawer Navigation Links */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-1 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('dashboard');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'dashboard' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <Home className="w-4 h-4" />
-                <span>Executive Dashboard</span>
-              </button>
+            {/* Drawer Navigation Sections */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Primary Ops Section */}
+              <section>
+                <h4 className="px-3 text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Operations</h4>
+                <div className="space-y-1">
+                  {[
+                    { id: 'inventory', label: 'Inventory Hub', icon: Package },
+                    { id: 'transfers', label: 'Stock Transfers', icon: ArrowLeftRight },
+                    { id: 'telecom_mfs', label: 'Flexiload & MFS', icon: PhoneIcon },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setCurrentTab(item.id as AndroidTab);
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full p-3 rounded-xl flex items-center gap-3 transition-colors ${
+                        currentTab === item.id ? 'bg-blue-600 text-white font-bold shadow-md' : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <item.icon className={`w-5 h-5 ${currentTab === item.id ? 'text-white' : 'text-slate-400'}`} />
+                      <span className="text-xs">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('pos');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'pos' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <ShoppingBag className="w-4 h-4" />
-                <span>Android POS Terminal</span>
-              </button>
+              {/* Management Section */}
+              <section>
+                <h4 className="px-3 text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Management</h4>
+                <div className="space-y-1">
+                  {[
+                    { id: 'expenses', label: 'Operational Expenses', icon: DollarSign },
+                    { id: 'reports', label: 'P&L Financial Reports', icon: PieChart },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setCurrentTab(item.id as AndroidTab);
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full p-3 rounded-xl flex items-center gap-3 transition-colors ${
+                        currentTab === item.id ? 'bg-blue-600 text-white font-bold shadow-md' : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <item.icon className={`w-5 h-5 ${currentTab === item.id ? 'text-white' : 'text-slate-400'}`} />
+                      <span className="text-xs">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('products');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'products' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <Package className="w-4 h-4" />
-                <span>Product Catalog</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('inventory');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'inventory' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <Package className="w-4 h-4" />
-                <span>Inventory Hub</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('transfers');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'transfers' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <ArrowLeftRight className="w-4 h-4" />
-                <span>Stock Transfers</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('customers');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'customers' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <Users className="w-4 h-4" />
-                <span>Customer Ledger</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('telecom_mfs');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'telecom_mfs' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <PhoneIcon className="w-4 h-4" />
-                <span>Flexiload & MFS</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('expenses');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'expenses' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <DollarSign className="w-4 h-4" />
-                <span>Operational Expenses</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentTab('reports');
-                  setIsDrawerOpen(false);
-                }}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 cursor-pointer ${
-                  currentTab === 'reports' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
-                }`}
-              >
-                <PieChart className="w-4 h-4" />
-                <span>P&L Financial Reports</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsApkModalOpen(true);
-                  setIsDrawerOpen(false);
-                }}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-emerald-400 hover:bg-slate-800 cursor-pointer font-bold"
-              >
-                <Smartphone className="w-4 h-4" />
-                <span>Android APK Architecture</span>
-              </button>
+              {/* Architecture Section */}
+              <section>
+                <h4 className="px-3 text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">System</h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsApkModalOpen(true);
+                    setIsDrawerOpen(false);
+                  }}
+                  className="w-full p-3 rounded-xl flex items-center gap-3 text-emerald-400 hover:bg-slate-800/50 transition-colors"
+                >
+                  <Smartphone className="w-5 h-5" />
+                  <span className="text-xs font-bold">Build Architecture</span>
+                </button>
+              </section>
             </div>
 
             {/* Drawer Footer Actions */}
-            <div className="p-4 border-t border-slate-800 space-y-2">
+            <div className="p-6 border-t border-slate-800 bg-slate-950/30">
               <button
                 type="button"
                 onClick={() => signOut()}
-                className="w-full py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
+                <span>SIGN OUT WORKSTATION</span>
               </button>
+              <div className="text-center mt-4 text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">
+                Version 1.0.10 Build #2408
+              </div>
             </div>
           </div>
         </div>
