@@ -29,6 +29,7 @@ import {
   ChevronDown,
   Keyboard,
   Maximize2,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useShop } from '../../context/ShopContext.tsx';
